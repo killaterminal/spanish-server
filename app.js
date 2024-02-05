@@ -3,10 +3,8 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const multiparty = require('multiparty');
-const fs = require('fs')
+const fs = require('fs');
 const sharp = require('sharp');
-const multer = require('multer');
-const router = express.Router();
 
 const app = express();
 const port = 3000;
@@ -39,84 +37,55 @@ app.use(function (req, res, next) {
 app.use(bodyParser.json());
 
 app.use(bodyParser.urlencoded({ extended: true }))
-app.use('/', router);
-
+app.get('/', (req, res) => {
+    res.sendFile(__dirname);
+});
 
 app.use('/uploads', express.static('uploads'));
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, 'uploads/'); 
-    },
-    filename: function (req, file, cb) {
-      cb(null, Date.now() + '-' + file.originalname); 
-    },
-  });
 
-// app.post('/add', (req, res) => {
-//     var form = new multiparty.Form();
 
-//     form.parse(req, async function (err, fields, files) {
-//         let file = files.file[0];
+app.post('/add', (req, res) => {
+    var form = new multiparty.Form();
+
+    form.parse(req, async function (err, fields, files) {
+        let file = files.file[0];
         
-//         if (file) {
+        if (file) {
 
-//             const buffer = fs.readFileSync(file.path);
+            const buffer = fs.readFileSync(file.path);
 
-//                 const maxFileSize = 125 * 1024; // 125 КБ в байтах
+                const maxFileSize = 125 * 1024; // 125 КБ в байтах
 
-//                 if (buffer.length > maxFileSize) {
-//                     const resizedBuffer = await sharp(buffer)
-//                         .resize({ fit: 'inside', width: 500 }) 
-//                         .toBuffer();
+                if (buffer.length > maxFileSize) {
+                    const resizedBuffer = await sharp(buffer)
+                        .resize({ fit: 'inside', width: 500 }) 
+                        .toBuffer();
 
-//                     if (resizedBuffer.length > maxFileSize) {
-//                         console.log("Error: File size still exceeds limit after resizing");
-//                         res.status(400).json({ error: 'Размер файла превышает 125КБ' });
-//                         return;
-//                     }
+                    if (resizedBuffer.length > maxFileSize) {
+                        console.log("Error: File size still exceeds limit after resizing");
+                        res.status(400).json({ error: 'Размер файла превышает 125КБ' });
+                        return;
+                    }
 
-//                     file.buffer = resizedBuffer;
-//                 } else{
-//                     file.buffer = 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Error-logo.png';
-//                 }
+                    file.buffer = resizedBuffer;
+                } else{
+                    file.buffer = 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Error-logo.png';
+                }
 
-//             const newItem = new Reviews({
-//                 file: file.buffer,
-//                 text: '@kipikh',
-//             });
+            const newItem = new Reviews({
+                file: file.buffer,
+                text: '@kipikh',
+            });
 
-//             await newItem.save();
-//             // res.json({ fileUrl: `/uploads/${btoa(String.fromCharCode.apply(null, new Uint8Array(newItem.file.data)))}` });
-//         }
-//         else{
-//             console.log("Error: File missing!")
-//         }
-//     });
-
-// });
-
-const upload = multer({ storage: storage });
-
-// ...
-
-router.post('/add', upload.single('file'), async function (req, res) {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'Файл не был загружен' });
-    }
-
-    const newItem = new Reviews({
-      file: `/uploads/${req.file.filename}`, // Сохраняем путь к файлу в базе данных
-      text: '@kipikh',
+            await newItem.save();
+            // res.json({ fileUrl: `/uploads/${btoa(String.fromCharCode.apply(null, new Uint8Array(newItem.file.data)))}` });
+        }
+        else{
+            console.log("Error: File missing!")
+        }
     });
 
-    await newItem.save();
-    res.json({ fileUrl: `/uploads/${req.file.filename}` }); // Отправляем ссылку на клиент
-  } catch (error) {
-    console.error('Произошла ошибка', error);
-    res.status(500).json({ error: 'Произошла ошибка на сервере' });
-  }
 });
 
 app.get('/items', async (req, res) => {

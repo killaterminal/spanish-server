@@ -23,8 +23,8 @@ const corsOptions = {
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     optionsSuccessStatus: 204,
-  };
-  
+};
+
 app.use(cors(corsOptions));
 
 app.use(function (req, res, next) {
@@ -50,28 +50,28 @@ app.post('/add', (req, res) => {
 
     form.parse(req, async function (err, fields, files) {
         let file = files.file[0];
-        
+
         if (file) {
 
             const buffer = fs.readFileSync(file.path);
 
-                const maxFileSize = 125 * 1024; // 125 КБ в байтах
+            const maxFileSize = 125 * 1024; // 125 КБ в байтах
 
-                if (buffer.length > maxFileSize) {
-                    const resizedBuffer = await sharp(buffer)
-                        .resize({ fit: 'inside', width: 500 }) 
-                        .toBuffer();
+            if (buffer.length > maxFileSize) {
+                const resizedBuffer = await sharp(buffer)
+                    .resize({ fit: 'inside', width: 500 })
+                    .toBuffer();
 
-                    if (resizedBuffer.length > maxFileSize) {
-                        console.log("Error: File size still exceeds limit after resizing");
-                        res.status(400).json({ error: 'Размер файла превышает 125КБ' });
-                        return;
-                    }
-
-                    file.buffer = resizedBuffer;
-                } else{
-                    file.buffer = 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Error-logo.png';
+                if (resizedBuffer.length > maxFileSize) {
+                    console.log("Error: File size still exceeds limit after resizing");
+                    res.status(400).json({ error: 'Размер файла превышает 125КБ' });
+                    return;
                 }
+
+                file.buffer = resizedBuffer;
+            } else {
+                file.buffer = 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Error-logo.png';
+            }
 
             const newItem = new Reviews({
                 file: file.buffer,
@@ -81,7 +81,7 @@ app.post('/add', (req, res) => {
             await newItem.save();
             // res.json({ fileUrl: `/uploads/${btoa(String.fromCharCode.apply(null, new Uint8Array(newItem.file.data)))}` });
         }
-        else{
+        else {
             console.log("Error: File missing!")
         }
     });

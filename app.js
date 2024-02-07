@@ -43,46 +43,62 @@ app.get('/', (req, res) => {
 
 app.use('/uploads', express.static('uploads'));
 
-app.post('/add', (req, res) => {
-    var form = new multiparty.Form();
+app.post('/add', async (req, res) => {
+    // var form = new multiparty.Form();
 
-    form.parse(req, async function (err, fields, files) {
-        let file = files.file[0];
+    // form.parse(req, async function (err, fields, files) {
+    //     let file = files.file[0];
 
-        if (file) {
+    //     if (file) {
 
-            const buffer = fs.readFileSync(file.path);
+    //         const buffer = fs.readFileSync(file.path);
 
-            const maxFileSize = 125 * 1024; // 125 КБ в байтах
+    //         const maxFileSize = 125 * 1024; // 125 КБ в байтах
 
-            if (buffer.length > maxFileSize) {
-                const resizedBuffer = await sharp(buffer)
-                    .resize({ fit: 'inside', width: 500 })
-                    .toBuffer();
+    //         if (buffer.length > maxFileSize) {
+    //             const resizedBuffer = await sharp(buffer)
+    //                 .resize({ fit: 'inside', width: 500 })
+    //                 .toBuffer();
 
-                if (resizedBuffer.length > maxFileSize) {
-                    console.log("Error: File size still exceeds limit after resizing");
-                    res.status(400).json({ error: 'Размер файла превышает 125КБ' });
-                    return;
-                }
+    //             if (resizedBuffer.length > maxFileSize) {
+    //                 console.log("Error: File size still exceeds limit after resizing");
+    //                 res.status(400).json({ error: 'Размер файла превышает 125КБ' });
+    //                 return;
+    //             }
 
-                file.buffer = resizedBuffer;
-            } else {
-                file.buffer = 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Error-logo.png';
-            }
+    //             file.buffer = resizedBuffer;
+    //         } else {
+    //             file.buffer = 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Error-logo.png';
+    //         }
 
-            const newItem = new Reviews({
-                file: file.buffer,
-                text: '@kipikh',
-            });
+    //         const newItem = new Reviews({
+    //             file: file.buffer,
+    //             text: '@kipikh',
+    //         });
 
-            await newItem.save();
-            // res.json({ fileUrl: `/uploads/${btoa(String.fromCharCode.apply(null, new Uint8Array(newItem.file.data)))}` });
-        }
-        else {
-            console.log("Error: File missing!")
-        }
-    });
+    //         await newItem.save();
+    //         // res.json({ fileUrl: `/uploads/${btoa(String.fromCharCode.apply(null, new Uint8Array(newItem.file.data)))}` });
+    //     }
+    //     else {
+    //         console.log("Error: File missing!")
+    //     }
+    // });
+
+    const imageUrl = req.body.file; 
+    const text = req.body.text;
+
+    try {
+        const newItem = new Reviews({
+            file: imageUrl, 
+            text: text, 
+        });
+
+        await newItem.save();
+        return res.json({ message: 'Файл успешно сохранен' });
+    } catch (error) {
+        console.error('Ошибка при сохранении ссылки на фото', error);
+        return res.status(500).json({ error: 'Произошла ошибка при сохранении ссылки на фото' });
+    }
 
 });
 

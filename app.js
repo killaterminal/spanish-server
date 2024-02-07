@@ -12,7 +12,7 @@ const port = 3000;
 mongoose.connect('mongodb+srv://dart-hit:qwerty123zxc34@cluster0.ap1ucz1.mongodb.net/spanish-bot', { useNewUrlParser: true, useUnifiedTopology: true });
 
 const reviewSchema = new mongoose.Schema({
-    file: Buffer,
+    file: String,
     text: String,
 });
 

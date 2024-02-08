@@ -18,6 +18,15 @@ const reviewSchema = new mongoose.Schema({
 
 const Reviews = mongoose.model('reviews', reviewSchema);
 
+const userSchema = new mongoose.Schema({
+    firstName: String,
+    username: String,
+    chatId: String,
+    directed: Boolean
+});
+
+const Users = mongoose.model('users', userSchema);
+
 const corsOptions = {
     origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -120,6 +129,27 @@ app.delete('/delete/:id', async (req, res) => {
         res.sendStatus(200);
     } catch (error) {
         console.error('Ошибка при удалении отзыва', error);
+        res.sendStatus(500);
+    }
+});
+
+app.get('/users', async (req, res) => {
+    try {
+        const users = await Users.find({});
+        res.json(users);
+    } catch (error) {
+        console.error('Произошла ошибка при получении списка пользователей', error);
+        res.sendStatus(500);
+    }
+});
+
+app.delete('/deleteUser/:id', async (req, res) => {
+    const userId = req.params.id;
+    try {
+        await Users.findOneAndDelete({ _id: userId });
+        res.sendStatus(200);
+    } catch (error) {
+        console.error('Произошла ошибка при удалении пользователя', error);
         res.sendStatus(500);
     }
 });

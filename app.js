@@ -19,7 +19,7 @@ const reviewSchema = new mongoose.Schema({
 const Reviews = mongoose.model('reviews', reviewSchema);
 
 const corsOptions = {
-    origin: 'https://spanish-bot-crud-production.up.railway.app/',
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
     optionsSuccessStatus: 204,

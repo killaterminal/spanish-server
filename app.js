@@ -84,9 +84,10 @@ app.post('/add', async (req, res) => {
     //     }
     // });
 
-    const imageUrl = req.body.file; 
+     const imageUrl = req.body.file; 
     const text = req.body.text;
-
+    console.log(imageUrl);
+    console.log(text);
     try {
         const newItem = new Reviews({
             file: imageUrl, 
